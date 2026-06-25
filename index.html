@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Etiquetado - OCR Foto</title>
+<title>Etiquetado - OCR por Celdas</title>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -14,39 +14,34 @@
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--txt)}
 header{background:#fff;border-bottom:1px solid var(--line);padding:12px 14px;position:sticky;top:0;z-index:20}
-.top{max-width:1180px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.top{max-width:1220px;margin:auto;display:flex;justify-content:space-between;gap:10px;align-items:center}
 h1{font-size:20px;color:var(--g);margin:0}
-h2{color:var(--g);margin:0 0 8px}
-.wrap{max-width:1180px;margin:auto;padding:14px}
-.mini{font-size:13px;color:var(--mut)}
+h2{color:var(--g);margin:0 0 8px}.mini{font-size:13px;color:var(--mut)}
+.wrap{max-width:1220px;margin:auto;padding:14px}
 .tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-button{border:0;border-radius:12px;padding:11px 14px;background:var(--g);color:#fff;font-weight:800;cursor:pointer}
-button.secondary{background:#edf5ef;color:var(--g)}
-button.blue{background:var(--b)}
-button.red{background:var(--r)}
-button.yellow{background:var(--y);color:#222}
+button{border:0;border-radius:12px;padding:11px 14px;background:var(--g);color:white;font-weight:800;cursor:pointer}
+button.secondary{background:#edf5ef;color:var(--g)} button.blue{background:var(--b)} button.red{background:var(--r)} button.yellow{background:var(--y);color:#222}
 button:disabled{opacity:.55;cursor:not-allowed}
-.tab{background:#fff;color:var(--g);border:1px solid var(--line)}
-.tab.active{background:var(--g);color:#fff}
+.tab{background:#fff;color:var(--g);border:1px solid var(--line)}.tab.active{background:var(--g);color:#fff}
 .panel{display:none;background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 6px 18px rgba(20,40,30,.05)}
 .panel.active{display:block}
-.grid{display:grid;grid-template-columns:330px 1fr;gap:14px}
-@media(max-width:900px){.grid{grid-template-columns:1fr}.row-grid{grid-template-columns:1fr 1fr!important}.big{font-size:18px;width:100%;padding:16px}}
+.grid{display:grid;grid-template-columns:340px 1fr;gap:14px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}.cellrow{grid-template-columns:1fr 1fr!important}.big{font-size:18px;width:100%;padding:16px}}
 .card{border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px}
 label{display:block;margin:10px 0 5px;font-size:12px;font-weight:800;color:#4c5651;text-transform:uppercase}
-input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 12px;font-size:15px;background:#fff;outline:none}
-textarea{min-height:100px;resize:vertical}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 11px;font-size:15px;background:#fff;outline:none}
+textarea{min-height:90px;resize:vertical}
+.btns{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
 .status{display:none;margin-top:12px;padding:11px 13px;border-radius:12px;background:#edf6ef;color:var(--g);font-weight:800}
 .status.show{display:block}.status.err{background:#fdecec;color:var(--r)}.status.warn{background:#fff7df;color:#765300}
-.btns{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
-.notice{background:#fff7df;border:1px solid #ffe2a0;border-radius:14px;padding:12px;margin-bottom:14px;color:#6b4b00;font-weight:800}
-.good{background:#eaf5ee;border-color:#cfe8d7;color:var(--g)}
-.preview{width:100%;max-height:430px;object-fit:contain;background:#fafafa;border:1px dashed var(--line);border-radius:14px;margin-top:10px}
+.notice{background:#eaf5ee;border:1px solid #cfe8d7;border-radius:14px;padding:12px;margin-bottom:14px;color:var(--g);font-weight:800}
 .bigcam{display:block;width:100%;border:2px dashed var(--g2);background:#fff;color:var(--g);border-radius:18px;padding:22px;font-size:20px;font-weight:900;cursor:pointer;text-align:center}
 .filehide{position:absolute;left:-9999px;opacity:0}
-.row-grid{display:grid;grid-template-columns:1fr .7fr .75fr .75fr 1fr auto;gap:8px;align-items:end;margin-bottom:8px;padding:8px;border:1px solid #eef3ef;border-radius:14px;background:#fbfdfb}
-.row-grid label{margin:0 0 4px}
-.row-grid input{padding:10px}
+.canvasWrap{width:100%;overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fafafa;padding:8px}
+canvas{max-width:100%;border-radius:10px;background:white}
+#workCanvas,#cellCanvas{display:none}
+.cellrow{display:grid;grid-template-columns:.8fr .8fr .8fr .8fr 1fr auto;gap:8px;align-items:end;margin-bottom:8px;padding:8px;border:1px solid #eef3ef;border-radius:14px;background:#fbfdfb}
+.cellrow label{margin:0 0 4px}.cellrow input{padding:9px}
 table{width:100%;border-collapse:collapse;margin-top:12px}
 th{background:var(--g);color:#fff;text-align:left;padding:10px;font-size:12px}
 td{border-bottom:1px solid #edf1ee;padding:9px;font-size:13px;vertical-align:top}
@@ -55,39 +50,52 @@ td{border-bottom:1px solid #edf1ee;padding:9px;font-size:13px;vertical-align:top
 .kpi{border-left:5px solid var(--g);background:#fff;border-radius:14px;padding:13px;box-shadow:0 4px 12px rgba(20,40,30,.05)}
 .kpi strong{display:block;color:var(--g);font-size:23px;margin-top:5px}
 .badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#e6f4ea;color:var(--g);font-weight:800;font-size:12px}
-canvas{display:none}
+.rangegrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 </style>
 </head>
 
 <body>
 <header>
 <div class="top">
-<div><h1>Etiquetado - OCR Foto</h1><div class="mini">Toma foto → lee varios códigos → guarda solo data</div></div>
+<div><h1>Etiquetado - OCR por Celdas</h1><div class="mini">Lee la cartilla como tabla: código, cantidad, inicio y fin</div></div>
 <div class="mini" id="fbStatus">Firebase...</div>
 </div>
 </header>
 
 <div class="wrap">
-<div class="notice">Sí o sí con foto: esta versión mejora OCR recortando y limpiando la imagen. Aun así, por letra manuscrita, siempre deja revisar/corregir antes de guardar. La foto no se guarda.</div>
+<div class="notice">Motor nuevo: la foto se recorta como tabla y se lee por celda. No guarda imagen, solo data. Revisa los resultados antes de guardar.</div>
 
 <div class="tabs">
-<button class="tab active" data-tab="captura">📷 Captura OCR</button>
+<button class="tab active" data-tab="captura">📷 Lectura por celdas</button>
 <button class="tab" data-tab="bandeja">🖥️ Bandeja PC</button>
 <button class="tab" data-tab="reporte">📊 Reporte</button>
 </div>
 
 <section id="captura" class="panel active">
-<h2>Leer hoja de etiquetado</h2>
-
 <div class="grid">
 <div class="card">
+<h2>Datos de la hoja</h2>
 <label>Fecha</label><input type="date" id="fecha">
-<label>Operador / responsable</label><input id="operador" placeholder="Ej: MARIA ZAPATA">
+<label>Operador / responsable</label><input id="operador" placeholder="Ej: JOSELYN POZO">
 <label>Empresa</label><select id="empresa"><option>DPRISA</option><option>RANSA</option><option>H&T</option><option>OTRO</option></select>
 <label>Tipo de hoja</label><select id="tipo"><option value="reporte etiquetado">Reporte de etiquetado</option><option value="armado sets">Armado sets / complejo</option><option value="promobox">PromoBox / operación especial</option></select>
 <label>Observación</label><textarea id="obs" placeholder="Ej: hoja rosada, turno mañana"></textarea>
+
+<div class="card" style="background:#fbfdfb;margin-top:12px">
+<b>Ajuste de recorte</b>
+<p class="mini">Si lee mal, ajusta el área de tabla. Valores en % sobre la imagen.</p>
+<div class="rangegrid">
+<div><label>Izquierda</label><input type="number" id="cropL" value="5" min="0" max="40"></div>
+<div><label>Derecha</label><input type="number" id="cropR" value="94" min="50" max="100"></div>
+<div><label>Arriba</label><input type="number" id="cropT" value="16" min="0" max="50"></div>
+<div><label>Abajo</label><input type="number" id="cropB" value="62" min="30" max="100"></div>
+</div>
+<div><label>Filas a leer</label><input type="number" id="rowCount" value="16" min="4" max="25"></div>
+</div>
+
 <div class="btns">
-<button id="btnOCR" class="blue big">Leer foto OCR</button>
+<button id="btnDraw" class="secondary">Ver recorte</button>
+<button id="btnOCR" class="blue big">Leer por celdas</button>
 <button id="btnSave" class="big">Guardar data</button>
 <button id="btnClear" class="secondary">Limpiar</button>
 </div>
@@ -97,26 +105,17 @@ canvas{display:none}
 <div class="card">
 <label for="foto" class="bigcam">📷 Abrir cámara / tomar foto</label>
 <input id="foto" class="filehide" type="file" accept="image/*" capture="environment">
-<img id="preview" class="preview">
-<canvas id="canvas"></canvas>
-<p class="mini">Consejo clave: foto recta, cerca de la tabla, buena luz, sin sombras. Si sale inclinada, el OCR se va de paseo.</p>
+<div class="canvasWrap"><canvas id="mainCanvas"></canvas></div>
+<canvas id="workCanvas"></canvas><canvas id="cellCanvas"></canvas>
+<p class="mini">Foto ideal: tabla completa, lo más recta posible, sin dedos, sin sombra y con bordes visibles.</p>
 </div>
-</div>
-
-<div class="card" style="margin-top:14px">
-<h3>Texto OCR leído</h3>
-<textarea id="ocrText" placeholder="Aquí aparecerá el texto leído. Puedes corregirlo y volver a detectar filas."></textarea>
-<div class="btns"><button class="secondary" id="btnParse">Detectar filas desde texto</button></div>
 </div>
 
 <div class="card" style="margin-top:14px">
 <h3>Filas detectadas</h3>
-<p class="mini">Revisa antes de guardar. El sistema buscará todos los códigos, cantidades y horas.</p>
+<p class="mini">Edita cualquier dato antes de guardar. Si una fila está vacía, se ignora.</p>
 <div id="rowsBox"></div>
-<div class="btns">
-<button class="blue" id="addRow">+ Agregar fila</button>
-<button class="secondary" id="duplicateLast">Duplicar última</button>
-</div>
+<div class="btns"><button class="blue" id="addRow">+ Agregar fila</button><button class="secondary" id="duplicateLast">Duplicar última</button></div>
 </div>
 </section>
 
@@ -154,14 +153,12 @@ const firebaseConfig = {
   messagingSenderId: "147518094146",
   appId: "1:147518094146:web:6515b114900f904de166db"
 };
-
 firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
 const $=id=>document.getElementById(id);
 const intFmt=new Intl.NumberFormat("es-EC");
 const numFmt=new Intl.NumberFormat("es-EC",{maximumFractionDigits:1});
-let currentFile=null, rows=[], cachedReport=[];
-
+let img=null, rows=[], cachedReport=[];
 $("fbStatus").textContent="Firebase: conectado";
 function today(){return new Date().toISOString().slice(0,10)}
 $("fecha").value=today(); $("filterDate").value=today();
@@ -169,143 +166,138 @@ function st(el,msg,type="ok"){el.textContent=msg;el.className="status show"+(typ
 
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));b.classList.add("active");$(b.dataset.tab).classList.add("active")});
 
-$("foto").onchange=()=>{currentFile=$("foto").files[0]||null;if(currentFile)$("preview").src=URL.createObjectURL(currentFile)};
+$("foto").onchange=()=>{
+  const file=$("foto").files[0]; if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{img=new Image();img.onload=()=>{drawMain()};img.src=e.target.result};
+  r.readAsDataURL(file);
+};
 
-async function prepareImage(file){
-  return new Promise((resolve,reject)=>{
-    const reader=new FileReader();
-    reader.onload=e=>{
-      const img=new Image();
-      img.onload=()=>{
-        const c=$("canvas"), ctx=c.getContext("2d");
-        const maxW=1400;
-        const scale=Math.min(1,maxW/img.width);
-        c.width=Math.round(img.width*scale);
-        c.height=Math.round(img.height*scale);
-        ctx.drawImage(img,0,0,c.width,c.height);
+function crop(){
+  const L=+$("cropL").value/100,R=+$("cropR").value/100,T=+$("cropT").value/100,B=+$("cropB").value/100;
+  return {x:img.width*L,y:img.height*T,w:img.width*(R-L),h:img.height*(B-T)};
+}
+function drawMain(){
+  if(!img)return;
+  const c=$("mainCanvas"),ctx=c.getContext("2d");
+  const maxW=850,scale=Math.min(1,maxW/img.width);
+  c.width=img.width*scale;c.height=img.height*scale;
+  ctx.drawImage(img,0,0,c.width,c.height);
+  const cr=crop();
+  ctx.strokeStyle="#1f6b45";ctx.lineWidth=4;
+  ctx.strokeRect(cr.x*scale,cr.y*scale,cr.w*scale,cr.h*scale);
+}
+["cropL","cropR","cropT","cropB","rowCount"].forEach(id=>$(id).oninput=()=>drawMain());
+$("btnDraw").onclick=()=>drawMain();
 
-        const imageData=ctx.getImageData(0,0,c.width,c.height);
-        const d=imageData.data;
-        for(let i=0;i<d.length;i+=4){
-          const gray=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
-          const contrast=(gray-128)*1.7+128;
-          const bw=contrast>145?255:0;
-          d[i]=d[i+1]=d[i+2]=bw;
-        }
-        ctx.putImageData(imageData,0,0);
-        resolve(c.toDataURL("image/png"));
-      };
-      img.onerror=reject;
-      img.src=e.target.result;
-    };
-    reader.onerror=reject;
-    reader.readAsDataURL(file);
+function getProcessedTable(){
+  const cr=crop();
+  const wc=$("workCanvas"),wctx=wc.getContext("2d");
+  const targetW=1200;
+  const scale=targetW/cr.w;
+  wc.width=targetW; wc.height=Math.round(cr.h*scale);
+  wctx.drawImage(img,cr.x,cr.y,cr.w,cr.h,0,0,wc.width,wc.height);
+  const data=wctx.getImageData(0,0,wc.width,wc.height);
+  const d=data.data;
+  for(let i=0;i<d.length;i+=4){
+    const gray=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
+    const contrasted=(gray-128)*1.9+128;
+    const bw=contrasted>150?255:0;
+    d[i]=d[i+1]=d[i+2]=bw;
+  }
+  wctx.putImageData(data,0,0);
+  return wc;
+}
+
+function colBounds(w){
+  // proporciones tomadas de la cartilla: CODIGO | TOTAL UNIDADES | H INICIO | H FIN
+  return [
+    [0.00,0.245],
+    [0.245,0.535],
+    [0.535,0.750],
+    [0.750,1.00]
+  ].map(([a,b])=>[Math.round(w*a),Math.round(w*b)]);
+}
+
+function cellImage(tableCanvas,rowIndex,colIndex,rowCount){
+  const cc=$("cellCanvas"),ctx=cc.getContext("2d");
+  const header=0.105; // saltar fila de títulos
+  const usableH=tableCanvas.height*(1-header);
+  const rowH=usableH/rowCount;
+  const y=Math.round(tableCanvas.height*header + rowIndex*rowH + rowH*0.08);
+  const h=Math.round(rowH*0.84);
+  const [x1,x2]=colBounds(tableCanvas.width)[colIndex];
+  const pad=colIndex===0?8:12;
+  const x=x1+pad, w=(x2-x1)-pad*2;
+  cc.width=Math.max(80,w); cc.height=Math.max(35,h);
+  ctx.fillStyle="white";ctx.fillRect(0,0,cc.width,cc.height);
+  ctx.drawImage(tableCanvas,x,y,w,h,0,0,cc.width,cc.height);
+  return cc.toDataURL("image/png");
+}
+
+async function readCell(worker,imgData,type){
+  await worker.setParameters({
+    tessedit_char_whitelist: type==="time" ? "0123456789:." : "0123456789",
+    tessedit_pageseg_mode: "7",
+    preserve_interword_spaces: "1"
   });
+  const res=await worker.recognize(imgData);
+  let t=(res.data.text||"").trim().replace(/\s+/g,"");
+  t=t.replace(/[Oo]/g,"0").replace(/[Il|]/g,"1").replace(/[Ss]/g,"5").replace(/[B]/g,"8");
+  if(type==="time"){
+    t=t.replace(/[^\d:.]/g,"").replace(".",":");
+    if(/^\d{3,4}$/.test(t)){t=t.padStart(4,"0");t=t.slice(0,2)+":"+t.slice(2)}
+    const m=t.match(/(\d{1,2})[:.]?(\d{2})/);
+    if(!m)return "";
+    const hh=+m[1],mm=+m[2];
+    if(hh>23||mm>59)return "";
+    return String(hh).padStart(2,"0")+":"+String(mm).padStart(2,"0");
+  }
+  t=t.replace(/[^\d]/g,"");
+  return t;
 }
 
 $("btnOCR").onclick=async()=>{
   try{
-    if(!currentFile) throw new Error("Primero toma la foto.");
+    if(!img)throw new Error("Primero toma una foto.");
     $("btnOCR").disabled=true;
-    st($("capStatus"),"Preparando imagen...","warn");
-    const cleanImg=await prepareImage(currentFile);
-    st($("capStatus"),"Leyendo OCR 0%...","warn");
-
-    const worker=await Tesseract.createWorker("eng", 1, {
-      logger:m=>{if(m.progress)st($("capStatus"),`Leyendo OCR ${Math.round(m.progress*100)}%...`,"warn")}
-    });
-    await worker.setParameters({
-      tessedit_char_whitelist: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz:/.- ",
-      preserve_interword_spaces: "1",
-      tessedit_pageseg_mode: "6"
-    });
-    const res=await worker.recognize(cleanImg);
+    st($("capStatus"),"Preparando tabla...","warn");
+    const table=getProcessedTable();
+    const rowCount=+$("rowCount").value||16;
+    rows=[];
+    st($("capStatus"),"Iniciando OCR por celdas...","warn");
+    const worker=await Tesseract.createWorker("eng");
+    for(let r=0;r<rowCount;r++){
+      st($("capStatus"),`Leyendo fila ${r+1} de ${rowCount}...`,"warn");
+      const codigo=await readCell(worker,cellImage(table,r,0,rowCount),"num");
+      const cantidad=await readCell(worker,cellImage(table,r,1,rowCount),"num");
+      const ini=await readCell(worker,cellImage(table,r,2,rowCount),"time");
+      const fin=await readCell(worker,cellImage(table,r,3,rowCount),"time");
+      if(codigo || cantidad || ini || fin){
+        rows.push({codigo,cantidad,horaInicio:ini,horaFin:fin,observacion:""});
+      }
+    }
     await worker.terminate();
-
-    $("ocrText").value=res.data.text||"";
-    rows=parseOCRToRows($("ocrText").value);
+    rows=rows.filter(x=>x.codigo || x.cantidad);
     renderRows();
-    st($("capStatus"),`Lectura finalizada. Filas detectadas: ${rows.length}. Revisa y guarda.`);
+    st($("capStatus"),`Lectura terminada. Filas detectadas: ${rows.length}. Revisa antes de guardar.`);
   }catch(e){st($("capStatus"),e.message,"err")}
   finally{$("btnOCR").disabled=false}
 };
-
-$("btnParse").onclick=()=>{rows=parseOCRToRows($("ocrText").value);renderRows();st($("capStatus"),`Filas detectadas: ${rows.length}`)};
-
-function parseOCRToRows(text){
-  const lines=(text||"").split(/\n+/).map(x=>x.trim()).filter(Boolean);
-  const result=[];
-  const bad={S:"5",s:"5",O:"0",o:"0",I:"1",l:"1",B:"8",Z:"2"};
-  function fixNum(v){return String(v||"").replace(/[SsOoIlBZ]/g,ch=>bad[ch]||ch)}
-  function fmtTime(v){
-    v=fixNum(v).replace(/[.hH]/g,":").replace(/[^\d:]/g,"");
-    if(/^\d{3,4}$/.test(v)){v=v.padStart(4,"0");return v.slice(0,2)+":"+v.slice(2)}
-    const m=v.match(/(\d{1,2}):?(\d{2})/);
-    if(!m)return "";
-    let hh=Number(m[1]), mm=Number(m[2]);
-    if(hh>23||mm>59)return "";
-    return String(hh).padStart(2,"0")+":"+String(mm).padStart(2,"0");
-  }
-
-  for(const original of lines){
-    let line=original.replace(/[|]/g," ").replace(/\s+/g," ");
-    line=fixNum(line);
-
-    const codes=[...line.matchAll(/\b\d{4,6}\b/g)].map(m=>({v:m[0],idx:m.index}));
-    if(!codes.length) continue;
-
-    for(let c=0;c<codes.length;c++){
-      const code=codes[c].v;
-      const start=codes[c].idx;
-      const end=codes[c+1]?.idx ?? line.length;
-      const seg=line.slice(start,end);
-
-      const timeMatches=[...seg.matchAll(/\b\d{1,2}[:.]?\d{2}\b/g)].map(m=>fmtTime(m[0])).filter(Boolean);
-      const nums=[...seg.matchAll(/\b\d{1,5}\b/g)].map(m=>m[0]);
-
-      let qty="";
-      for(const n of nums){
-        if(n===code) continue;
-        const n4=n.padStart(4,"0");
-        if(timeMatches.some(t=>t.replace(":","")===n4 || t.replace(":","").includes(n))) continue;
-        if(Number(n)>0){qty=String(Number(n));break}
-      }
-
-      if(code && qty){
-        result.push({
-          codigo:code,
-          cantidad:qty,
-          horaInicio:timeMatches[0]||"",
-          horaFin:timeMatches[1]||"",
-          observacion:""
-        });
-      }
-    }
-  }
-
-  const seen=new Set();
-  return result.filter(r=>{
-    const k=`${r.codigo}-${r.cantidad}-${r.horaInicio}-${r.horaFin}`;
-    if(seen.has(k))return false;
-    seen.add(k); return true;
-  });
-}
 
 function blankRow(){return {codigo:"",cantidad:"",horaInicio:"",horaFin:"",observacion:""}}
 function renderRows(){
   if(!rows.length) rows=[blankRow()];
   $("rowsBox").innerHTML=rows.map((r,i)=>`
-    <div class="row-grid">
-      <div><label>Código</label><input inputmode="numeric" value="${r.codigo}" data-i="${i}" data-k="codigo"></div>
-      <div><label>Cantidad</label><input inputmode="numeric" value="${r.cantidad}" data-i="${i}" data-k="cantidad"></div>
-      <div><label>Inicio</label><input inputmode="numeric" value="${r.horaInicio}" data-i="${i}" data-k="horaInicio"></div>
-      <div><label>Fin</label><input inputmode="numeric" value="${r.horaFin}" data-i="${i}" data-k="horaFin"></div>
+    <div class="cellrow">
+      <div><label>Código</label><input inputmode="numeric" value="${r.codigo||""}" data-i="${i}" data-k="codigo"></div>
+      <div><label>Cantidad</label><input inputmode="numeric" value="${r.cantidad||""}" data-i="${i}" data-k="cantidad"></div>
+      <div><label>Inicio</label><input inputmode="numeric" value="${r.horaInicio||""}" data-i="${i}" data-k="horaInicio"></div>
+      <div><label>Fin</label><input inputmode="numeric" value="${r.horaFin||""}" data-i="${i}" data-k="horaFin"></div>
       <div><label>Obs.</label><input value="${r.observacion||""}" data-i="${i}" data-k="observacion"></div>
       <button class="red" onclick="removeRow(${i})">X</button>
     </div>`).join("");
-  $("rowsBox").querySelectorAll("input").forEach(inp=>{
-    inp.oninput=()=>{const i=+inp.dataset.i,k=inp.dataset.k;rows[i][k]=inp.value}
-  });
+  $("rowsBox").querySelectorAll("input").forEach(inp=>inp.oninput=()=>{rows[+inp.dataset.i][inp.dataset.k]=inp.value});
 }
 window.removeRow=i=>{rows.splice(i,1);if(!rows.length)rows=[blankRow()];renderRows()};
 $("addRow").onclick=()=>{rows.push(blankRow());renderRows()};
@@ -314,18 +306,18 @@ $("duplicateLast").onclick=()=>{const last=rows[rows.length-1]||blankRow();rows.
 $("btnSave").onclick=async()=>{
   try{
     const clean=rows.map(r=>({codigo:String(r.codigo||"").trim(),cantidad:Number(r.cantidad||0),horaInicio:String(r.horaInicio||"").trim(),horaFin:String(r.horaFin||"").trim(),observacion:String(r.observacion||"").trim()})).filter(r=>r.codigo&&r.cantidad);
-    if(!clean.length) throw new Error("No hay filas válidas para guardar.");
+    if(!clean.length) throw new Error("No hay filas válidas.");
     const fecha=$("fecha").value||today(), operador=$("operador").value.trim().toUpperCase(), empresa=$("empresa").value, tipo=$("tipo").value, obs=$("obs").value.trim();
     if(!operador) throw new Error("Coloca el operador o responsable.");
     $("btnSave").disabled=true; st($("capStatus"),"Guardando data...","warn");
-    await db.collection("productividad_data").add({fecha,operador,empresa,tipo,observacion:obs,filas:clean,ocrText:$("ocrText").value||"",estado:"pendiente",createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    await db.collection("productividad_data").add({fecha,operador,empresa,tipo,observacion:obs,filas:clean,estado:"pendiente",createdAt:firebase.firestore.FieldValue.serverTimestamp()});
     st($("capStatus"),`Guardado: ${clean.length} filas. Foto descartada.`);
     clearAll();
   }catch(e){st($("capStatus"),e.message,"err")}
   finally{$("btnSave").disabled=false}
 };
 $("btnClear").onclick=clearAll;
-function clearAll(){$("foto").value="";$("preview").removeAttribute("src");$("ocrText").value="";$("obs").value="";currentFile=null;rows=[];renderRows()}
+function clearAll(){img=null;$("foto").value="";$("mainCanvas").getContext("2d").clearRect(0,0,$("mainCanvas").width,$("mainCanvas").height);$("obs").value="";rows=[];renderRows()}
 
 $("todayBtn").onclick=()=>{$("filterDate").value=today();loadData()};
 $("loadData").onclick=loadData;
