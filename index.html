@@ -3,113 +3,460 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Etiquetado - Lectura IA</title>
+<title>Etiquetado - Cámara + Lectura IA</title>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
 <style>
-:root{--g:#1f6b45;--g2:#2e8b57;--bg:#f5f7f6;--line:#dfe8e2;--txt:#28312d;--mut:#6d7772;--r:#d93025;--b:#1a73e8;--y:#fbbc04}
-*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--txt)}
+:root{--g:#1f6b45;--g2:#2e8b57;--bg:#f5f7f6;--line:#dfe8e2;--txt:#28312d;--mut:#6d7772;--r:#d93025;--b:#1a73e8;--y:#fbbc04;--soft:#f0faf4}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--txt)}
 header{background:#fff;border-bottom:1px solid var(--line);padding:12px 14px;position:sticky;top:0;z-index:20}
 .top{max-width:1220px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:10px}
-h1{font-size:20px;color:var(--g);margin:0}h2{color:var(--g);margin:0 0 8px}.mini{font-size:13px;color:var(--mut)}
-.wrap{max-width:1220px;margin:auto;padding:14px}.tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+h1{font-size:20px;color:var(--g);margin:0}
+h2{color:var(--g);margin:0 0 8px}
+h3{margin:8px 0;color:#24352c}
+.wrap{max-width:1220px;margin:auto;padding:14px}
+.mini{font-size:13px;color:var(--mut)}
+.tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 button{border:0;border-radius:12px;padding:11px 14px;background:var(--g);color:#fff;font-weight:800;cursor:pointer}
-button.secondary{background:#edf5ef;color:var(--g)}button.blue{background:var(--b)}button.red{background:var(--r)}button.yellow{background:var(--y);color:#222}
-.tab{background:#fff;color:var(--g);border:1px solid var(--line)}.tab.active{background:var(--g);color:#fff}
+button.secondary{background:#edf5ef;color:var(--g)}
+button.blue{background:var(--b)}
+button.red{background:var(--r)}
+button.yellow{background:var(--y);color:#222}
+button:disabled{opacity:.55;cursor:not-allowed}
+.tab{background:#fff;color:var(--g);border:1px solid var(--line)}
+.tab.active{background:var(--g);color:#fff}
 .panel{display:none;background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 6px 18px rgba(20,40,30,.05)}
-.panel.active{display:block}.grid{display:grid;grid-template-columns:340px 1fr;gap:14px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.panel.active{display:block}
+.grid{display:grid;grid-template-columns:340px 1fr;gap:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:900px){.grid,.grid2{grid-template-columns:1fr}.cellrow{grid-template-columns:1fr 1fr!important}.big{font-size:18px;width:100%;padding:16px}}
-.card{border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px}.soft{background:#f0faf4}
+.card{border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px}
+.card.soft{background:var(--soft)}
 label{display:block;margin:10px 0 5px;font-size:12px;font-weight:800;color:#4c5651;text-transform:uppercase}
 input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px 11px;font-size:15px;background:#fff;outline:none}
-textarea{min-height:110px;resize:vertical}.btns{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+input:focus,select:focus,textarea:focus{border-color:var(--g2);box-shadow:0 0 0 3px rgba(46,139,87,.12)}
+textarea{min-height:110px;resize:vertical}
+.btns{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
 .status{display:none;margin-top:12px;padding:11px 13px;border-radius:12px;background:#edf6ef;color:var(--g);font-weight:800}
-.status.show{display:block}.status.err{background:#fdecec;color:var(--r)}.status.warn{background:#fff7df;color:#765300}
+.status.show{display:block}
+.status.err{background:#fdecec;color:var(--r)}
+.status.warn{background:#fff7df;color:#765300}
 .notice{background:#eaf5ee;border:1px solid #cfe8d7;border-radius:14px;padding:12px;margin-bottom:14px;color:var(--g);font-weight:800}
 .cellrow{display:grid;grid-template-columns:.8fr .8fr .75fr .75fr 1fr auto;gap:8px;align-items:end;margin-bottom:8px;padding:8px;border:1px solid #eef3ef;border-radius:14px;background:#fbfdfb}
-.cellrow label{margin:0 0 4px}.cellrow input{padding:9px}
-table{width:100%;border-collapse:collapse;margin-top:12px}th{background:var(--g);color:#fff;text-align:left;padding:10px;font-size:12px}
+.cellrow label{margin:0 0 4px}
+.cellrow input{padding:9px}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+th{background:var(--g);color:#fff;text-align:left;padding:10px;font-size:12px}
 td{border-bottom:1px solid #edf1ee;padding:9px;font-size:13px;vertical-align:top}
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0}@media(max-width:850px){.kpis{grid-template-columns:1fr 1fr}}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0}
+@media(max-width:850px){.kpis{grid-template-columns:1fr 1fr}}
 .kpi{border-left:5px solid var(--g);background:#fff;border-radius:14px;padding:13px;box-shadow:0 4px 12px rgba(20,40,30,.05)}
-.kpi strong{display:block;color:var(--g);font-size:23px;margin-top:5px}.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#e6f4ea;color:var(--g);font-weight:800;font-size:12px}
+.kpi strong{display:block;color:var(--g);font-size:23px;margin-top:5px}
+.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#e6f4ea;color:var(--g);font-weight:800;font-size:12px}
 .template{background:#f7faf8;border:1px dashed var(--line);border-radius:14px;padding:12px;margin-top:10px;white-space:pre-wrap;font-family:Consolas,monospace;font-size:13px}
+.bigcam{display:block;width:100%;border:2px dashed var(--g2);background:#fff;color:var(--g);border-radius:18px;padding:22px;font-size:20px;font-weight:900;cursor:pointer;text-align:center}
+.filehide{position:absolute;left:-9999px;opacity:0}
+.preview{width:100%;max-height:540px;object-fit:contain;background:#fafafa;border:1px dashed var(--line);border-radius:14px;margin-top:10px}
+.copybox{background:#f7faf8;border:1px dashed var(--line);border-radius:14px;padding:12px;white-space:pre-wrap;font-family:Consolas,monospace;font-size:13px}
 </style>
 </head>
-<body>
-<header><div class="top"><div><h1>Etiquetado - Lectura IA</h1><div class="mini">ChatGPT lee la foto → pegas la data → Firebase → reporte</div></div><div class="mini" id="fbStatus">Firebase...</div></div></header>
-<div class="wrap">
-<div class="notice">Flujo sin API pagada: me envías la foto por ChatGPT, yo te devuelvo la tabla, la pegas aquí y la web genera el reporte.</div>
-<div class="tabs"><button class="tab active" data-tab="pegar">🤖 Pegar lectura IA</button><button class="tab" data-tab="manual">✍️ Manual rápido</button><button class="tab" data-tab="bandeja">🖥️ Bandeja PC</button><button class="tab" data-tab="reporte">📊 Reporte</button></div>
 
-<section id="pegar" class="panel active">
-<h2>Pegar lectura de ChatGPT</h2><p class="mini">Acepta tabulaciones, punto y coma, coma, barras o espacios.</p>
-<div class="grid">
-<div class="card">
-<label>Fecha</label><input type="date" id="iaFecha"><label>Operador</label><input id="iaOperador" placeholder="Ej: JOSELYN POZO">
-<label>Empresa</label><select id="iaEmpresa"><option>DPRISA</option><option>RANSA</option><option>H&T</option><option>OTRO</option></select>
-<label>Tipo de trabajo</label><select id="iaTipo"><option value="reporte etiquetado">Reporte de etiquetado / regular</option><option value="armado sets">Armado sets / complejo</option><option value="promobox">PromoBox / operación especial</option></select>
-<label>Observación</label><textarea id="iaObs" placeholder="Ej: foto 1, hoja rosada, turno mañana"></textarea>
-<div class="card soft"><b>Plantilla para pedirme lectura</b><div class="template">Lee esta cartilla de etiquetado y devuélveme solo este formato:
+<body>
+<header>
+<div class="top">
+  <div>
+    <h1>Etiquetado - Cámara + Lectura IA</h1>
+    <div class="mini">Tomas foto en la web → ChatGPT lee → pegas data → Firebase → reporte</div>
+  </div>
+  <div class="mini" id="fbStatus">Firebase...</div>
+</div>
+</header>
+
+<div class="wrap">
+<div class="notice">
+Mantuvimos cámara. Sin API pagada, la IA se usa así: tomas la foto, la envías aquí en ChatGPT, yo te devuelvo la tabla y la pegas en la pestaña “Pegar lectura IA”.
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-tab="camara">📷 Cámara</button>
+  <button class="tab" data-tab="pegar">🤖 Pegar lectura IA</button>
+  <button class="tab" data-tab="manual">✍️ Manual rápido</button>
+  <button class="tab" data-tab="bandeja">🖥️ Bandeja PC</button>
+  <button class="tab" data-tab="reporte">📊 Reporte</button>
+</div>
+
+<section id="camara" class="panel active">
+  <h2>Tomar foto de cartilla</h2>
+  <p class="mini">La foto no se guarda en Firebase. Solo sirve para que la puedas revisar y enviarla por ChatGPT.</p>
+
+  <div class="grid">
+    <div class="card">
+      <label>Fecha</label>
+      <input type="date" id="cFecha">
+      <label>Operador</label>
+      <input id="cOperador" placeholder="Ej: JOSELYN POZO">
+      <label>Empresa</label>
+      <select id="cEmpresa"><option>DPRISA</option><option>RANSA</option><option>H&T</option><option>OTRO</option></select>
+      <label>Tipo de trabajo</label>
+      <select id="cTipo"><option value="reporte etiquetado">Reporte de etiquetado / regular</option><option value="armado sets">Armado sets / complejo</option><option value="promobox">PromoBox / operación especial</option></select>
+      <label>Observación</label>
+      <textarea id="cObs" placeholder="Ej: foto 1, hoja rosada"></textarea>
+
+      <div class="btns">
+        <button class="blue" id="goPaste">Pasar datos a Pegar IA</button>
+        <button class="secondary" id="copyPrompt">Copiar prompt</button>
+        <button class="secondary" id="clearPhoto">Limpiar foto</button>
+      </div>
+      <div id="camStatus" class="status"></div>
+
+      <div class="card soft" style="margin-top:12px">
+        <b>Prompt para enviarme la foto</b>
+        <div class="copybox" id="promptBox">Lee esta cartilla de etiquetado y devuélveme solo este formato:
 codigo	cantidad	inicio	fin
 
-No inventes datos. Si una celda está vacía usa vacío.</div></div>
-</div>
-<div class="card">
-<label>Data leída por IA</label><textarea id="iaText" style="min-height:220px" placeholder="47412	144	08:00	08:20&#10;44129	480	08:22	08:58"></textarea>
-<div class="btns"><button class="blue" id="iaParse">Convertir a filas</button><button id="iaSave">Guardar en Firebase</button><button class="secondary" id="iaClear">Limpiar</button></div>
-<div id="iaStatus" class="status"></div>
-</div>
-</div>
-<div class="card" style="margin-top:14px"><h3>Vista previa editable</h3><div id="iaRowsBox"></div><div class="btns"><button class="blue" id="iaAddRow">+ Agregar fila</button><button class="secondary" id="iaDupRow">Duplicar última</button></div></div>
+No inventes datos. Si una celda está vacía, deja vacío.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label for="photoInput" class="bigcam">📷 Abrir cámara / Tomar foto</label>
+      <input id="photoInput" class="filehide" type="file" accept="image/*" capture="environment">
+      <img id="preview" class="preview" alt="Vista previa">
+      <p class="mini">Consejo operativo: foto cerca, recta, tabla completa, sin sombras. Si la foto sale “modo borracho”, la IA también se marea.</p>
+    </div>
+  </div>
+</section>
+
+<section id="pegar" class="panel">
+  <h2>Pegar lectura de ChatGPT</h2>
+  <p class="mini">Pega aquí la tabla que yo te devuelva. Acepta tabulaciones, punto y coma, coma, barras o espacios.</p>
+
+  <div class="grid">
+    <div class="card">
+      <label>Fecha</label>
+      <input type="date" id="iaFecha">
+      <label>Operador</label>
+      <input id="iaOperador" placeholder="Ej: JOSELYN POZO">
+      <label>Empresa</label>
+      <select id="iaEmpresa">
+        <option>DPRISA</option><option>RANSA</option><option>H&T</option><option>OTRO</option>
+      </select>
+      <label>Tipo de trabajo</label>
+      <select id="iaTipo">
+        <option value="reporte etiquetado">Reporte de etiquetado / regular</option>
+        <option value="armado sets">Armado sets / complejo</option>
+        <option value="promobox">PromoBox / operación especial</option>
+      </select>
+      <label>Observación</label>
+      <textarea id="iaObs" placeholder="Ej: foto 1, hoja rosada, turno mañana"></textarea>
+
+      <div class="card soft">
+        <b>Plantilla para pedirme lectura</b>
+        <div class="template">Lee esta cartilla de etiquetado y devuélveme solo este formato:
+codigo	cantidad	inicio	fin
+
+No inventes datos. Si una celda está vacía usa vacío.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label>Data leída por IA</label>
+      <textarea id="iaText" style="min-height:220px" placeholder="47412	144	08:00	08:20&#10;44129	480	08:22	08:58"></textarea>
+      <div class="btns">
+        <button class="blue" id="iaParse">Convertir a filas</button>
+        <button id="iaSave">Guardar en Firebase</button>
+        <button class="secondary" id="iaClear">Limpiar</button>
+      </div>
+      <div id="iaStatus" class="status"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <h3>Vista previa editable</h3>
+    <div id="iaRowsBox"></div>
+    <div class="btns">
+      <button class="blue" id="iaAddRow">+ Agregar fila</button>
+      <button class="secondary" id="iaDupRow">Duplicar última</button>
+    </div>
+  </div>
 </section>
 
 <section id="manual" class="panel">
-<h2>Ingreso manual rápido</h2><div class="grid"><div class="card">
-<label>Fecha</label><input type="date" id="mFecha"><label>Operador</label><input id="mOperador" placeholder="Ej: MARIA ZAPATA">
-<label>Empresa</label><select id="mEmpresa"><option>DPRISA</option><option>RANSA</option><option>H&T</option><option>OTRO</option></select>
-<label>Tipo</label><select id="mTipo"><option value="reporte etiquetado">Regular</option><option value="armado sets">Complejo / Sets</option><option value="promobox">PromoBox</option></select>
-<label>Observación</label><textarea id="mObs"></textarea><label>Pegado rápido</label><textarea id="mBulk" placeholder="41277 288 08:05 08:40"></textarea>
-<div class="btns"><button class="blue" id="mBulkBtn">Pasar a filas</button><button id="mSave">Guardar</button></div><div id="mStatus" class="status"></div>
-</div><div class="card"><h3>Filas</h3><div id="mRowsBox"></div><div class="btns"><button class="blue" id="mAddRow">+ Agregar fila</button></div></div></div>
+  <h2>Ingreso manual rápido</h2>
+  <div class="grid">
+    <div class="card">
+      <label>Fecha</label><input type="date" id="mFecha">
+      <label>Operador</label><input id="mOperador" placeholder="Ej: MARIA ZAPATA">
+      <label>Empresa</label><select id="mEmpresa"><option>DPRISA</option><option>RANSA</option><option>H&T</option><option>OTRO</option></select>
+      <label>Tipo</label><select id="mTipo"><option value="reporte etiquetado">Regular</option><option value="armado sets">Complejo / Sets</option><option value="promobox">PromoBox</option></select>
+      <label>Observación</label><textarea id="mObs"></textarea>
+      <label>Pegado rápido</label>
+      <textarea id="mBulk" placeholder="41277 288 08:05 08:40"></textarea>
+      <div class="btns">
+        <button class="blue" id="mBulkBtn">Pasar a filas</button>
+        <button id="mSave">Guardar</button>
+      </div>
+      <div id="mStatus" class="status"></div>
+    </div>
+    <div class="card">
+      <h3>Filas</h3>
+      <div id="mRowsBox"></div>
+      <div class="btns"><button class="blue" id="mAddRow">+ Agregar fila</button></div>
+    </div>
+  </div>
 </section>
 
 <section id="bandeja" class="panel">
-<h2>Bandeja PC - Data recopilada</h2><div class="grid2"><div><label>Fecha</label><input type="date" id="filterDate"></div><div><label>Estado</label><select id="filterEstado"><option value="todos">Todos</option><option value="pendiente">Pendiente</option><option value="validado">Validado</option></select></div></div>
-<div class="btns"><button id="loadData">Actualizar</button><button class="secondary" id="todayBtn">Hoy</button></div><div id="listStatus" class="status"></div><div id="dataList"></div>
+  <h2>Bandeja PC - Data recopilada</h2>
+  <div class="grid2">
+    <div><label>Fecha</label><input type="date" id="filterDate"></div>
+    <div><label>Estado</label><select id="filterEstado"><option value="todos">Todos</option><option value="pendiente">Pendiente</option><option value="validado">Validado</option></select></div>
+  </div>
+  <div class="btns">
+    <button id="loadData">Actualizar</button>
+    <button class="secondary" id="todayBtn">Hoy</button>
+  </div>
+  <div id="listStatus" class="status"></div>
+  <div id="dataList"></div>
 </section>
 
 <section id="reporte" class="panel">
-<h2>Reporte productividad real</h2><div class="btns"><button id="buildReport">Generar reporte</button><button class="secondary" id="copyMail">Copiar correo</button><button class="secondary" id="csv">Descargar CSV</button></div>
-<div class="kpis"><div class="kpi">Productividad real<strong id="kProd">0%</strong></div><div class="kpi">Unidades<strong id="kUnd">0</strong></div><div class="kpi">Meta<strong id="kMeta">0</strong></div><div class="kpi">Operadores<strong id="kOps">0</strong></div></div>
-<div class="card"><h3>Resumen por operador</h3><div id="reportTable"></div></div><div class="card" style="margin-top:14px"><h3>Correo generado</h3><textarea id="mail"></textarea></div>
+  <h2>Reporte productividad real</h2>
+  <div class="btns">
+    <button id="buildReport">Generar reporte</button>
+    <button class="secondary" id="copyMail">Copiar correo</button>
+    <button class="secondary" id="csv">Descargar CSV</button>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi">Productividad real<strong id="kProd">0%</strong></div>
+    <div class="kpi">Unidades<strong id="kUnd">0</strong></div>
+    <div class="kpi">Meta<strong id="kMeta">0</strong></div>
+    <div class="kpi">Operadores<strong id="kOps">0</strong></div>
+  </div>
+
+  <div class="card"><h3>Resumen por operador</h3><div id="reportTable"></div></div>
+  <div class="card" style="margin-top:14px"><h3>Correo generado</h3><textarea id="mail"></textarea></div>
 </section>
 </div>
 
 <script>
-const firebaseConfig={apiKey:"AIzaSyDVAny7Bs_cfiqSinryg-dmNatQKRYlYB8",authDomain:"etiquetado---reporte.firebaseapp.com",projectId:"etiquetado---reporte",storageBucket:"etiquetado---reporte.firebasestorage.app",messagingSenderId:"147518094146",appId:"1:147518094146:web:6515b114900f904de166db"};
-firebase.initializeApp(firebaseConfig);const db=firebase.firestore();const $=id=>document.getElementById(id);const intFmt=new Intl.NumberFormat("es-EC");const numFmt=new Intl.NumberFormat("es-EC",{maximumFractionDigits:1});
-let iaRows=[],mRows=[],cachedReport=[];$("fbStatus").textContent="Firebase: conectado";
-function today(){return new Date().toISOString().slice(0,10)}["iaFecha","mFecha","filterDate"].forEach(id=>$(id).value=today());
+const firebaseConfig = {
+  apiKey: "AIzaSyDVAny7Bs_cfiqSinryg-dmNatQKRYlYB8",
+  authDomain: "etiquetado---reporte.firebaseapp.com",
+  projectId: "etiquetado---reporte",
+  storageBucket: "etiquetado---reporte.firebasestorage.app",
+  messagingSenderId: "147518094146",
+  appId: "1:147518094146:web:6515b114900f904de166db"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+const $=id=>document.getElementById(id);
+const intFmt=new Intl.NumberFormat("es-EC");
+const numFmt=new Intl.NumberFormat("es-EC",{maximumFractionDigits:1});
+let iaRows=[], mRows=[], cachedReport=[];
+
+$("fbStatus").textContent="Firebase: conectado";
+function today(){return new Date().toISOString().slice(0,10)}
+["cFecha","iaFecha","mFecha","filterDate"].forEach(id=>$(id).value=today());
+
 function st(el,msg,type="ok"){el.textContent=msg;el.className="status show"+(type==="err"?" err":type==="warn"?" warn":"")}
-document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));b.classList.add("active");$(b.dataset.tab).classList.add("active")});
-function blankRow(){return{codigo:"",cantidad:"",horaInicio:"",horaFin:"",observacion:""}}
-function fmtTime(v){v=String(v||"").trim().replace(/[.hH]/g,":");if(/^\d{3,4}$/.test(v)){v=v.padStart(4,"0");return v.slice(0,2)+":"+v.slice(2)}const m=v.match(/(\d{1,2})[:.]?(\d{2})/);return m?m[1].padStart(2,"0")+":"+m[2]:v}
-function parseLines(text){const out=[];(text||"").split(/\n+/).map(x=>x.trim()).filter(Boolean).forEach(line=>{if(/^codigo|^código|^-|^\|/i.test(line))return;let clean=line.replace(/\|/g,"\t").replace(/;/g,"\t").replace(/,/g,"\t").replace(/\s{2,}/g,"\t").trim();let p=clean.split(/\t+/).map(x=>x.trim()).filter(Boolean);if(p.length<4){const m=line.match(/(\d{4,6})\D+(\d{1,5})\D+(\d{1,2}[:.]?\d{2})\D+(\d{1,2}[:.]?\d{2})/);if(m)p=[m[1],m[2],m[3],m[4]]}if(p.length>=2)out.push({codigo:String(p[0]||"").replace(/[^\d]/g,""),cantidad:Number(String(p[1]||"").replace(/[^\d]/g,""))||"",horaInicio:fmtTime(p[2]||""),horaFin:fmtTime(p[3]||""),observacion:p.slice(4).join(" ")})});return out.filter(r=>r.codigo||r.cantidad||r.horaInicio||r.horaFin)}
-function renderRows(containerId,rows,prefix){const box=$(containerId);if(!rows.length)rows.push(blankRow());box.innerHTML=rows.map((r,i)=>`<div class="cellrow"><div><label>Código</label><input inputmode="numeric" value="${r.codigo||""}" data-i="${i}" data-k="codigo" data-p="${prefix}"></div><div><label>Cantidad</label><input inputmode="numeric" value="${r.cantidad||""}" data-i="${i}" data-k="cantidad" data-p="${prefix}"></div><div><label>Inicio</label><input inputmode="numeric" value="${r.horaInicio||""}" data-i="${i}" data-k="horaInicio" data-p="${prefix}"></div><div><label>Fin</label><input inputmode="numeric" value="${r.horaFin||""}" data-i="${i}" data-k="horaFin" data-p="${prefix}"></div><div><label>Obs.</label><input value="${r.observacion||""}" data-i="${i}" data-k="observacion" data-p="${prefix}"></div><button class="red" onclick="removeRow('${prefix}',${i})">X</button></div>`).join("");box.querySelectorAll("input").forEach(inp=>inp.oninput=()=>{const arr=inp.dataset.p==="ia"?iaRows:mRows;const k=inp.dataset.k;arr[+inp.dataset.i][k]=k==="cantidad"?(Number(inp.value)||""):inp.value})}
-window.removeRow=(prefix,i)=>{const arr=prefix==="ia"?iaRows:mRows;arr.splice(i,1);renderRows(prefix==="ia"?"iaRowsBox":"mRowsBox",arr,prefix)}
-$("iaParse").onclick=()=>{iaRows=parseLines($("iaText").value);renderRows("iaRowsBox",iaRows,"ia");st($("iaStatus"),`Filas convertidas: ${iaRows.filter(r=>r.codigo&&r.cantidad).length}`)}
-$("iaAddRow").onclick=()=>{iaRows.push(blankRow());renderRows("iaRowsBox",iaRows,"ia")};$("iaDupRow").onclick=()=>{const last=iaRows[iaRows.length-1]||blankRow();iaRows.push({...last,codigo:"",cantidad:""});renderRows("iaRowsBox",iaRows,"ia")};$("iaClear").onclick=()=>{$("iaText").value="";$("iaObs").value="";iaRows=[];renderRows("iaRowsBox",iaRows,"ia")};$("iaSave").onclick=()=>saveRecord("ia");
-$("mBulkBtn").onclick=()=>{mRows=parseLines($("mBulk").value);renderRows("mRowsBox",mRows,"m");st($("mStatus"),`Filas cargadas: ${mRows.length}`)};$("mAddRow").onclick=()=>{mRows.push(blankRow());renderRows("mRowsBox",mRows,"m")};$("mSave").onclick=()=>saveRecord("m");
-async function saveRecord(prefix){try{const rows=prefix==="ia"?iaRows:mRows;const clean=rows.map(r=>({codigo:String(r.codigo||"").trim(),cantidad:Number(r.cantidad||0),horaInicio:fmtTime(r.horaInicio),horaFin:fmtTime(r.horaFin),observacion:String(r.observacion||"").trim()})).filter(r=>r.codigo&&r.cantidad);if(!clean.length)throw new Error("No hay filas válidas para guardar.");const fecha=$(prefix==="ia"?"iaFecha":"mFecha").value||today();const operador=$(prefix==="ia"?"iaOperador":"mOperador").value.trim().toUpperCase();const empresa=$(prefix==="ia"?"iaEmpresa":"mEmpresa").value;const tipo=$(prefix==="ia"?"iaTipo":"mTipo").value;const observacion=$(prefix==="ia"?"iaObs":"mObs").value.trim();if(!operador)throw new Error("Coloca el operador.");await db.collection("productividad_data").add({fecha,operador,empresa,tipo,observacion,filas:clean,estado:"pendiente",origen:prefix==="ia"?"lectura_chatgpt":"manual",createdAt:firebase.firestore.FieldValue.serverTimestamp()});st($(prefix==="ia"?"iaStatus":"mStatus"),`Guardado correctamente: ${clean.length} filas.`)}catch(e){st($(prefix==="ia"?"iaStatus":"mStatus"),e.message,"err")}}
-$("todayBtn").onclick=()=>{$("filterDate").value=today();loadData()};$("loadData").onclick=loadData;
-async function loadData(){try{st($("listStatus"),"Cargando data...","warn");let q=db.collection("productividad_data");const f=$("filterDate").value,e=$("filterEstado").value;if(f)q=q.where("fecha","==",f);if(e!=="todos")q=q.where("estado","==",e);const snap=await q.get();const docs=[];snap.forEach(d=>docs.push({id:d.id,...d.data()}));docs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));renderData(docs);st($("listStatus"),`Registros: ${docs.length}`)}catch(e){st($("listStatus"),e.message,"err")}}
-function renderData(docs){$("dataList").innerHTML=docs.map(d=>`<div class="card" style="margin-top:12px"><span class="badge">${d.estado||"pendiente"}</span><h3>${d.operador||"SIN OPERADOR"} · ${d.empresa||""}</h3><div class="mini">${d.fecha||""} · ${d.tipo||""} · ${d.origen||""} · ${d.observacion||""}</div><table><thead><tr><th>Código</th><th>Cantidad</th><th>Inicio</th><th>Fin</th><th>Obs.</th></tr></thead><tbody>${(d.filas||[]).map(r=>`<tr><td>${r.codigo}</td><td>${r.cantidad}</td><td>${r.horaInicio}</td><td>${r.horaFin}</td><td>${r.observacion||""}</td></tr>`).join("")}</tbody></table><div class="btns"><button class="yellow" onclick="markValid('${d.id}')">Validar</button><button class="red" onclick="delReg('${d.id}')">Eliminar</button></div></div>`).join("")}
-window.markValid=async(id)=>{await db.collection("productividad_data").doc(id).update({estado:"validado",updatedAt:firebase.firestore.FieldValue.serverTimestamp()});loadData()};window.delReg=async(id)=>{if(confirm("¿Eliminar registro?")){await db.collection("productividad_data").doc(id).delete();loadData()}};
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+function showTab(tab){
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
+  document.querySelector(`.tab[data-tab="${tab}"]`).classList.add("active");
+  $(tab).classList.add("active");
+}
+
+$("photoInput").onchange=()=>{
+  const file=$("photoInput").files[0];
+  if(file){
+    $("preview").src=URL.createObjectURL(file);
+    st($("camStatus"),"Foto lista. Envíamela por ChatGPT para leerla.");
+  }
+};
+$("clearPhoto").onclick=()=>{
+  $("photoInput").value="";
+  $("preview").removeAttribute("src");
+  st($("camStatus"),"Foto limpiada.");
+};
+$("copyPrompt").onclick=async()=>{
+  await navigator.clipboard.writeText($("promptBox").textContent);
+  st($("camStatus"),"Prompt copiado. Pégalo junto con la foto en ChatGPT.");
+};
+$("goPaste").onclick=()=>{
+  $("iaFecha").value=$("cFecha").value;
+  $("iaOperador").value=$("cOperador").value;
+  $("iaEmpresa").value=$("cEmpresa").value;
+  $("iaTipo").value=$("cTipo").value;
+  $("iaObs").value=$("cObs").value;
+  showTab("pegar");
+};
+
+function blankRow(){return {codigo:"",cantidad:"",horaInicio:"",horaFin:"",observacion:""}}
+function fmtTime(v){
+  v=String(v||"").trim().replace(/[.hH]/g,":");
+  if(/^\d{3,4}$/.test(v)){v=v.padStart(4,"0");return v.slice(0,2)+":"+v.slice(2)}
+  const m=v.match(/(\d{1,2})[:.]?(\d{2})/);
+  if(!m)return v;
+  return m[1].padStart(2,"0")+":"+m[2];
+}
+
+function parseLines(text){
+  const out=[];
+  (text||"").split(/\n+/).map(x=>x.trim()).filter(Boolean).forEach(line=>{
+    if(/^codigo|^código|^-|^\|/i.test(line)) return;
+    let clean=line.replace(/\|/g,"\t").replace(/;/g,"\t").replace(/,/g,"\t").replace(/\s{2,}/g,"\t").trim();
+    let p=clean.split(/\t+/).map(x=>x.trim()).filter(x=>x!=="");
+    if(p.length<4){
+      const m=line.match(/(\d{4,6})\D+(\d{1,5})\D+(\d{1,2}[:.]?\d{2})\D+(\d{1,2}[:.]?\d{2})/);
+      if(m)p=[m[1],m[2],m[3],m[4]];
+    }
+    if(p.length>=2){
+      out.push({
+        codigo:String(p[0]||"").replace(/[^\d]/g,""),
+        cantidad:Number(String(p[1]||"").replace(/[^\d]/g,""))||"",
+        horaInicio:fmtTime(p[2]||""),
+        horaFin:fmtTime(p[3]||""),
+        observacion:p.slice(4).join(" ")
+      });
+    }
+  });
+  return out.filter(r=>r.codigo || r.cantidad || r.horaInicio || r.horaFin);
+}
+
+function renderRows(containerId, rows, prefix){
+  const box=$(containerId);
+  if(!rows.length) rows.push(blankRow());
+  box.innerHTML=rows.map((r,i)=>`
+    <div class="cellrow">
+      <div><label>Código</label><input inputmode="numeric" value="${r.codigo||""}" data-i="${i}" data-k="codigo" data-p="${prefix}"></div>
+      <div><label>Cantidad</label><input inputmode="numeric" value="${r.cantidad||""}" data-i="${i}" data-k="cantidad" data-p="${prefix}"></div>
+      <div><label>Inicio</label><input inputmode="numeric" value="${r.horaInicio||""}" data-i="${i}" data-k="horaInicio" data-p="${prefix}"></div>
+      <div><label>Fin</label><input inputmode="numeric" value="${r.horaFin||""}" data-i="${i}" data-k="horaFin" data-p="${prefix}"></div>
+      <div><label>Obs.</label><input value="${r.observacion||""}" data-i="${i}" data-k="observacion" data-p="${prefix}"></div>
+      <button class="red" onclick="removeRow('${prefix}',${i})">X</button>
+    </div>`).join("");
+  box.querySelectorAll("input").forEach(inp=>inp.oninput=()=>{
+    const arr=inp.dataset.p==="ia"?iaRows:mRows;
+    const k=inp.dataset.k;
+    arr[+inp.dataset.i][k]=k==="cantidad"?(Number(inp.value)||""):inp.value;
+  });
+}
+window.removeRow=(prefix,i)=>{
+  const arr=prefix==="ia"?iaRows:mRows;
+  arr.splice(i,1);
+  renderRows(prefix==="ia"?"iaRowsBox":"mRowsBox",arr,prefix);
+};
+
+$("iaParse").onclick=()=>{iaRows=parseLines($("iaText").value);renderRows("iaRowsBox",iaRows,"ia");st($("iaStatus"),`Filas convertidas: ${iaRows.filter(r=>r.codigo&&r.cantidad).length}`)};
+$("iaAddRow").onclick=()=>{iaRows.push(blankRow());renderRows("iaRowsBox",iaRows,"ia")};
+$("iaDupRow").onclick=()=>{const last=iaRows[iaRows.length-1]||blankRow();iaRows.push({...last,codigo:"",cantidad:""});renderRows("iaRowsBox",iaRows,"ia")};
+$("iaClear").onclick=()=>{$("iaText").value="";$("iaObs").value="";iaRows=[];renderRows("iaRowsBox",iaRows,"ia")};
+$("iaSave").onclick=()=>saveRecord("ia");
+
+$("mBulkBtn").onclick=()=>{mRows=parseLines($("mBulk").value);renderRows("mRowsBox",mRows,"m");st($("mStatus"),`Filas cargadas: ${mRows.length}`)};
+$("mAddRow").onclick=()=>{mRows.push(blankRow());renderRows("mRowsBox",mRows,"m")};
+$("mSave").onclick=()=>saveRecord("m");
+
+async function saveRecord(prefix){
+  try{
+    const rows=prefix==="ia"?iaRows:mRows;
+    const clean=rows.map(r=>({
+      codigo:String(r.codigo||"").trim(),
+      cantidad:Number(r.cantidad||0),
+      horaInicio:fmtTime(r.horaInicio),
+      horaFin:fmtTime(r.horaFin),
+      observacion:String(r.observacion||"").trim()
+    })).filter(r=>r.codigo&&r.cantidad);
+    if(!clean.length) throw new Error("No hay filas válidas para guardar.");
+
+    const fecha=$(prefix==="ia"?"iaFecha":"mFecha").value||today();
+    const operador=$(prefix==="ia"?"iaOperador":"mOperador").value.trim().toUpperCase();
+    const empresa=$(prefix==="ia"?"iaEmpresa":"mEmpresa").value;
+    const tipo=$(prefix==="ia"?"iaTipo":"mTipo").value;
+    const observacion=$(prefix==="ia"?"iaObs":"mObs").value.trim();
+    if(!operador) throw new Error("Coloca el operador.");
+
+    await db.collection("productividad_data").add({
+      fecha,operador,empresa,tipo,observacion,filas:clean,estado:"pendiente",
+      origen:prefix==="ia"?"lectura_chatgpt":"manual",
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    st($(prefix==="ia"?"iaStatus":"mStatus"),`Guardado correctamente: ${clean.length} filas.`);
+  }catch(e){st($(prefix==="ia"?"iaStatus":"mStatus"),e.message,"err")}
+}
+
+$("todayBtn").onclick=()=>{$("filterDate").value=today();loadData()};
+$("loadData").onclick=loadData;
+
+async function loadData(){
+  try{
+    st($("listStatus"),"Cargando data...","warn");
+    let q=db.collection("productividad_data");
+    const f=$("filterDate").value,e=$("filterEstado").value;
+    if(f)q=q.where("fecha","==",f);
+    if(e!=="todos")q=q.where("estado","==",e);
+    const snap=await q.get(); const docs=[];
+    snap.forEach(d=>docs.push({id:d.id,...d.data()}));
+    docs.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    renderData(docs); st($("listStatus"),`Registros: ${docs.length}`);
+  }catch(e){st($("listStatus"),e.message,"err")}
+}
+
+function renderData(docs){
+  $("dataList").innerHTML=docs.map(d=>`
+  <div class="card" style="margin-top:12px">
+    <span class="badge">${d.estado||"pendiente"}</span>
+    <h3>${d.operador||"SIN OPERADOR"} · ${d.empresa||""}</h3>
+    <div class="mini">${d.fecha||""} · ${d.tipo||""} · ${d.origen||""} · ${d.observacion||""}</div>
+    <table><thead><tr><th>Código</th><th>Cantidad</th><th>Inicio</th><th>Fin</th><th>Obs.</th></tr></thead><tbody>${(d.filas||[]).map(r=>`<tr><td>${r.codigo}</td><td>${r.cantidad}</td><td>${r.horaInicio}</td><td>${r.horaFin}</td><td>${r.observacion||""}</td></tr>`).join("")}</tbody></table>
+    <div class="btns"><button class="yellow" onclick="markValid('${d.id}')">Validar</button><button class="red" onclick="delReg('${d.id}')">Eliminar</button></div>
+  </div>`).join("");
+}
+window.markValid=async(id)=>{await db.collection("productividad_data").doc(id).update({estado:"validado",updatedAt:firebase.firestore.FieldValue.serverTimestamp()});loadData()};
+window.delReg=async(id)=>{if(confirm("¿Eliminar registro?")){await db.collection("productividad_data").doc(id).delete();loadData()}};
+
 $("buildReport").onclick=buildReport;
-async function buildReport(){const fecha=$("filterDate").value||today();let q=db.collection("productividad_data").where("estado","==","validado");if(fecha)q=q.where("fecha","==",fecha);const snap=await q.get();const docs=[];snap.forEach(d=>docs.push(d.data()));const map=new Map();docs.forEach(doc=>{const key=`${doc.operador}|${doc.empresa}`;if(!map.has(key))map.set(key,{operador:doc.operador,empresa:doc.empresa,alcance:0,minutos:0,complejo:false,regular:false});const obj=map.get(key);(doc.filas||[]).forEach(f=>{obj.alcance+=Number(f.cantidad||0);obj.minutos+=diff(f.horaInicio,f.horaFin);const t=`${doc.tipo||""} ${f.observacion||""}`.toLowerCase();if(t.includes("set")||t.includes("complejo")||t.includes("promobox"))obj.complejo=true;else obj.regular=true})});const rep=[...map.values()].map(r=>{const horas=r.minutos/60,metaHora=(r.complejo&&!r.regular)?50:500,metaDiaria=horas*metaHora,productividad=metaDiaria?r.alcance/metaDiaria*100:0;return{...r,horas,metaHora,metaDiaria,productividad}}).sort((a,b)=>b.productividad-a.productividad);cachedReport=rep;renderReport(rep,fecha)}
-function parseTime(t){const m=String(t||"").match(/(\d{1,2})[:hH.]?(\d{2})/);return m?{h:+m[1],m:+m[2]}:null}function diff(a,b){const A=parseTime(a),B=parseTime(b);if(!A||!B)return 0;let s=A.h*60+A.m,e=B.h*60+B.m;if(e<s)e+=1440;return Math.max(0,e-s)}
-function renderReport(rep,fecha){const und=rep.reduce((s,r)=>s+r.alcance,0),meta=rep.reduce((s,r)=>s+r.metaDiaria,0),prod=meta?und/meta*100:0;$("kProd").textContent=`${numFmt.format(prod)}%`;$("kUnd").textContent=intFmt.format(und);$("kMeta").textContent=intFmt.format(meta);$("kOps").textContent=rep.length;$("reportTable").innerHTML=`<table><thead><tr><th>Operador</th><th>Empresa</th><th>Horas</th><th>Meta/H</th><th>Meta</th><th>Alcance</th><th>Prod.</th></tr></thead><tbody>${rep.map(r=>`<tr><td><b>${r.operador}</b></td><td>${r.empresa}</td><td>${r.horas.toFixed(2)} h</td><td>${r.metaHora}</td><td>${intFmt.format(r.metaDiaria)}</td><td>${intFmt.format(r.alcance)}</td><td><b>${numFmt.format(r.productividad)}%</b></td></tr>`).join("")}<tr><td colspan="4"><b>TOTAL REAL</b></td><td><b>${intFmt.format(meta)}</b></td><td><b>${intFmt.format(und)}</b></td><td><b>${numFmt.format(prod)}%</b></td></tr></tbody></table>`;$("mail").value=`Estimados,
+async function buildReport(){
+  const fecha=$("filterDate").value||today();
+  let q=db.collection("productividad_data").where("estado","==","validado");
+  if(fecha)q=q.where("fecha","==",fecha);
+  const snap=await q.get(); const docs=[];
+  snap.forEach(d=>docs.push(d.data()));
+  const map=new Map();
+  docs.forEach(doc=>{
+    const key=`${doc.operador}|${doc.empresa}`;
+    if(!map.has(key))map.set(key,{operador:doc.operador,empresa:doc.empresa,alcance:0,minutos:0,complejo:false,regular:false});
+    const obj=map.get(key);
+    (doc.filas||[]).forEach(f=>{
+      obj.alcance+=Number(f.cantidad||0);
+      obj.minutos+=diff(f.horaInicio,f.horaFin);
+      const t=`${doc.tipo||""} ${f.observacion||""}`.toLowerCase();
+      if(t.includes("set")||t.includes("complejo")||t.includes("promobox"))obj.complejo=true;else obj.regular=true;
+    });
+  });
+  const rep=[...map.values()].map(r=>{
+    const horas=r.minutos/60;
+    const metaHora=(r.complejo&&!r.regular)?50:500;
+    const metaDiaria=horas*metaHora;
+    const productividad=metaDiaria?r.alcance/metaDiaria*100:0;
+    return {...r,horas,metaHora,metaDiaria,productividad};
+  }).sort((a,b)=>b.productividad-a.productividad);
+  cachedReport=rep; renderReport(rep,fecha);
+}
+function parseTime(t){const m=String(t||"").match(/(\d{1,2})[:hH.]?(\d{2})/);return m?{h:+m[1],m:+m[2]}:null}
+function diff(a,b){const A=parseTime(a),B=parseTime(b);if(!A||!B)return 0;let s=A.h*60+A.m,e=B.h*60+B.m;if(e<s)e+=1440;return Math.max(0,e-s)}
+function renderReport(rep,fecha){
+  const und=rep.reduce((s,r)=>s+r.alcance,0), meta=rep.reduce((s,r)=>s+r.metaDiaria,0), prod=meta?und/meta*100:0;
+  $("kProd").textContent=`${numFmt.format(prod)}%`; $("kUnd").textContent=intFmt.format(und); $("kMeta").textContent=intFmt.format(meta); $("kOps").textContent=rep.length;
+  $("reportTable").innerHTML=`<table><thead><tr><th>Operador</th><th>Empresa</th><th>Horas</th><th>Meta/H</th><th>Meta</th><th>Alcance</th><th>Prod.</th></tr></thead><tbody>${rep.map(r=>`<tr><td><b>${r.operador}</b></td><td>${r.empresa}</td><td>${r.horas.toFixed(2)} h</td><td>${r.metaHora}</td><td>${intFmt.format(r.metaDiaria)}</td><td>${intFmt.format(r.alcance)}</td><td><b>${numFmt.format(r.productividad)}%</b></td></tr>`).join("")}<tr><td colspan="4"><b>TOTAL REAL</b></td><td><b>${intFmt.format(meta)}</b></td><td><b>${intFmt.format(und)}</b></td><td><b>${numFmt.format(prod)}%</b></td></tr></tbody></table>`;
+  $("mail").value=`Estimados,
 
 Comparto el resumen de productividad de etiquetado correspondiente a la fecha ${fecha}.
 
@@ -121,10 +468,14 @@ Total operadores: ${rep.length}
 Detalle por operador:
 ${rep.map(r=>`- ${r.operador}: ${intFmt.format(r.alcance)} unidades / ${r.horas.toFixed(2)} h / Meta ${intFmt.format(r.metaDiaria)} / Productividad ${numFmt.format(r.productividad)}%`).join("\n")}
 
-Nota: la productividad general se calcula de forma real ponderada.`}
+Nota: la productividad general se calcula de forma real ponderada.`;
+}
 $("copyMail").onclick=async()=>{if(!$("mail").value)return alert("Primero genera el reporte.");await navigator.clipboard.writeText($("mail").value);alert("Correo copiado")};
 $("csv").onclick=()=>{if(!cachedReport.length)return alert("Primero genera reporte");const csv=[["Operador","Empresa","Horas","Meta/H","Meta","Alcance","Productividad"],...cachedReport.map(r=>[r.operador,r.empresa,r.horas.toFixed(2),r.metaHora,r.metaDiaria.toFixed(0),r.alcance,r.productividad.toFixed(1)+"%"])].map(r=>r.join(";")).join("\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download="reporte_etiquetado.csv";a.click()};
-renderRows("iaRowsBox",iaRows,"ia");renderRows("mRowsBox",mRows,"m");loadData().catch(()=>{});
+
+renderRows("iaRowsBox",iaRows,"ia");
+renderRows("mRowsBox",mRows,"m");
+loadData().catch(()=>{});
 </script>
 </body>
 </html>
